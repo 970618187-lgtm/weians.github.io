@@ -2,273 +2,584 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Portfolio 2026 - WeiWang</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;overflow:hidden;background:#000}
 
-  /* Slide container */
-  .slides{position:relative;width:100%;height:100%}
-  .slide{
-    position:absolute;top:0;left:0;width:100%;height:100%;
-    opacity:0;transition:opacity .5s ease;
-    display:flex;align-items:center;justify-content:center;
-    pointer-events:none;
-  }
-  .slide.active{opacity:1;pointer-events:auto}
-  .slide img{
-    max-width:100%;max-height:100%;
-    object-fit:contain;
-    -webkit-user-drag:none;user-select:none;
-  }
+/* ── Container ── */
+.container{width:100vw;height:100vh;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.container::-webkit-scrollbar{display:none}
 
-  /* Click zones for navigation (PC) */
-  .nav-zone{
-    position:absolute;top:0;height:100%;width:20%;z-index:10;cursor:pointer;
-    display:flex;align-items:center;
-    opacity:0;transition:opacity .3s;
-  }
-  .nav-zone:hover{opacity:1}
-  .nav-zone.prev{left:0;justify-content:flex-start;padding-left:20px}
-  .nav-zone.next{right:0;justify-content:flex-end;padding-right:20px}
-  .nav-zone svg{
-    width:40px;height:40px;
-    filter:drop-shadow(0 1px 4px rgba(0,0,0,.5));
-    fill:rgba(255,255,255,.8);
-  }
+/* ── Slide base ── */
+.slide{width:100vw;height:100vh;scroll-snap-align:start;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.slide-pad{padding:clamp(24px,4vh,48px) clamp(24px,5vw,80px)}
 
-  /* Bottom bar */
-  .bottom-bar{
-    position:absolute;bottom:0;left:0;right:0;z-index:20;
-    display:flex;align-items:center;justify-content:center;
-    padding:12px 16px 20px;
-    background:linear-gradient(transparent,rgba(0,0,0,.4));
-    opacity:0;transition:opacity .3s;
-  }
-  .slides:hover .bottom-bar,.slides.touch-active .bottom-bar{opacity:1}
+/* ── Themes ── */
+.theme-light{background:linear-gradient(160deg,#f0f6ff 0%,#f7f9fc 40%,#f3f3f5 100%);color:#222}
+.theme-dark{background:linear-gradient(160deg,#060e1f 0%,#0c1e3a 40%,#050a14 100%);color:#e8ecf2}
+.theme-gradient{background:linear-gradient(135deg,#0a2a5c 0%,#0d1a3a 30%,#1a0530 60%,#0a0a20 100%);color:#e8ecf2}
 
-  /* Dots */
-  .dots{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:80%}
-  .dot{
-    width:8px;height:8px;border-radius:50%;
-    background:rgba(255,255,255,.35);
-    cursor:pointer;transition:all .3s;flex-shrink:0;
-  }
-  .dot.active{background:#fff;transform:scale(1.3)}
+/* ── Typography ── */
+.t-huge{font-size:clamp(2.4rem,6vw,7rem);font-weight:900;letter-spacing:-.02em;line-height:1.1}
+.t-big{font-size:clamp(1.4rem,2.8vw,2.8rem);font-weight:800;line-height:1.25}
+.t-mid{font-size:clamp(1rem,1.6vw,1.5rem);font-weight:700;line-height:1.35}
+.t-body{font-size:clamp(.72rem,1.1vw,1.05rem);line-height:1.65;color:inherit}
+.t-sm{font-size:clamp(.6rem,.9vw,.85rem);line-height:1.5;opacity:.75}
+.t-num{font-size:clamp(3rem,7vw,8rem);font-weight:900;opacity:.15;line-height:1}
+.cyan{color:#00b8d9}
+.blue{color:#2196f3}
+.pink{color:#e040a0}
+.red{color:#f44}
+.green{color:#4caf50}
+.orange{color:#ff9800}
+.op6{opacity:.6}
+.op4{opacity:.4}
+.bold{font-weight:700}
+.mt1{margin-top:clamp(8px,1.2vh,16px)}
+.mt2{margin-top:clamp(12px,2vh,28px)}
+.mt3{margin-top:clamp(20px,3vh,40px)}
+.gap1{gap:clamp(8px,1vw,16px)}
+.gap2{gap:clamp(12px,1.5vw,24px)}
 
-  /* Page indicator */
-  .page-info{
-    position:absolute;bottom:24px;right:20px;z-index:20;
-    color:rgba(255,255,255,.6);font-size:13px;
-    opacity:0;transition:opacity .3s;
-    pointer-events:none;
-  }
-  .slides:hover .page-info,.slides.touch-active .page-info{opacity:1}
+/* ── Layout helpers ── */
+.row{display:flex;flex-wrap:wrap;align-items:flex-start}
+.col{display:flex;flex-direction:column}
+.center{justify-content:center;align-items:center;text-align:center}
+.flex1{flex:1;min-width:0}
 
-  /* Fullscreen button */
-  .fs-btn{
-    position:absolute;top:16px;right:16px;z-index:30;
-    width:36px;height:36px;border:none;border-radius:8px;
-    background:rgba(255,255,255,.15);backdrop-filter:blur(4px);
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-    opacity:0;transition:opacity .3s;
-  }
-  .slides:hover .fs-btn,.slides.touch-active .fs-btn{opacity:1}
-  .fs-btn svg{width:18px;height:18px;fill:rgba(255,255,255,.8)}
+/* ── Cards ── */
+.card{border-radius:clamp(8px,1vw,16px);padding:clamp(12px,1.5vw,24px);background:rgba(255,255,255,.7);backdrop-filter:blur(8px)}
+.card-dark{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
 
-  /* Loading spinner */
-  .loading{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:32px;height:32px;border:3px solid rgba(255,255,255,.2);
-    border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;
-  }
-  @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+/* ── Image slides ── */
+.slide-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0}
+.slide-img-wrap img{max-width:100%;max-height:100%;object-fit:contain}
 
-  /* Mobile adjustments */
-  @media(max-width:768px){
-    .nav-zone{display:none}
-    .dot{width:6px;height:6px}
-    .dots{gap:4px}
-    .bottom-bar{padding:8px 12px 16px}
-    .page-info{bottom:18px;right:14px;font-size:12px}
-  }
+/* ── Cover blob ── */
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;pointer-events:none}
 
-  /* Preload hint */
-  .preload{display:none}
+/* ── Navigation ── */
+.nav{position:fixed;right:clamp(8px,1.2vw,20px);top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:6px;opacity:0;transition:opacity .3s}
+.nav:hover,.nav.show{opacity:1}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .25s;border:none;padding:0}
+.nav-dot.active{background:#00b8d9;transform:scale(1.4)}
+.nav-dot.light-ctx{background:rgba(0,0,0,.15)}
+.nav-dot.light-ctx.active{background:#00b8d9}
+.page-num{position:fixed;bottom:clamp(12px,2vh,24px);right:clamp(12px,2vw,28px);z-index:100;color:rgba(255,255,255,.4);font-size:clamp(.6rem,.8vw,.8rem);pointer-events:none;transition:color .3s}
+.page-num.light-ctx{color:rgba(0,0,0,.3)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .slide-pad{padding:clamp(16px,3vh,28px) clamp(16px,4vw,24px)}
+  .hide-m{display:none!important}
+  .row-m-col{flex-direction:column}
+  .nav{right:4px;gap:4px}
+  .nav-dot{width:6px;height:6px}
+}
+@media(min-width:769px){
+  .hide-d{display:none!important}
+}
+
+/* ── Animations ── */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.5}}
+.star{position:absolute;width:clamp(16px,2vw,32px);height:clamp(16px,2vw,32px);animation:pulse 3s ease-in-out infinite}
+.star svg{width:100%;height:100%;fill:#fff}
 </style>
 </head>
 <body>
-<div class="slides" id="slides">
-  <div class="loading" id="loader"></div>
+<div class="container" id="container">
 
-  <!-- Navigation zones -->
-  <div class="nav-zone prev" onclick="prev()">
-    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 1: Cover                              -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-light slide-pad col center" id="s1">
+  <div class="blob" style="width:40vw;height:40vw;background:radial-gradient(circle,#a8dfff,#dff0ff);top:10%;left:-5%"></div>
+  <div class="blob" style="width:25vw;height:25vw;background:radial-gradient(circle,#c5e8ff,#eef6ff);bottom:20%;right:5%"></div>
+  <h1 class="t-huge" style="letter-spacing:-.04em">Portfolio <span class="cyan">2026</span></h1>
+  <div class="mt2" style="display:inline-flex;align-items:center;gap:8px;background:rgba(240,240,240,.7);backdrop-filter:blur(8px);border-radius:40px;padding:clamp(8px,1vh,14px) clamp(16px,2vw,32px);font-size:clamp(.7rem,1.1vw,1rem);color:#555">
+    UX体验设计师·AI工具·vibe coding 实践者
+    <span style="display:inline-block;width:2px;height:1.2em;background:#333;animation:pulse 1s infinite;margin-left:4px"></span>
   </div>
-  <div class="nav-zone next" onclick="next()">
-    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-  </div>
+  <p class="mt3" style="font-size:clamp(.75rem,1.1vw,1rem);background:linear-gradient(90deg,#00b8d9,#e040a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent">当创造不再有边界，让我们回归问题本身</p>
+</section>
 
-  <!-- Fullscreen button -->
-  <button class="fs-btn" onclick="toggleFs()" title="全屏">
-    <svg viewBox="0 0 24 24" id="fsIcon"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-  </button>
-
-  <!-- Bottom bar -->
-  <div class="bottom-bar">
-    <div class="dots" id="dots"></div>
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 2: About Me                           -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-light slide-pad col" id="s2" style="justify-content:center">
+  <h2 class="t-big" style="text-align:center">About Me</h2>
+  <p class="t-body op6 mt1" style="text-align:center">6年体验设计经验 · 29岁 · 研究生 · Vibe Coding 实践者</p>
+  <div class="mt3" style="max-width:900px;margin:0 auto;width:100%">
+    <!-- 工作经历 -->
+    <div class="row mt2 gap2" style="align-items:flex-start">
+      <div style="width:clamp(60px,8vw,100px);font-weight:700;font-size:clamp(.7rem,1vw,.95rem);flex-shrink:0">工作经历</div>
+      <div class="flex1 col gap2">
+        <div class="row gap2" style="align-items:flex-start">
+          <div style="width:clamp(60px,10vw,110px);flex-shrink:0;font-weight:600;font-size:clamp(.65rem,.95vw,.9rem)">阿里巴巴高德</div>
+          <div class="flex1">
+            <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:4px">
+              <span class="bold" style="font-size:clamp(.7rem,1vw,.95rem)">体验设计师</span>
+              <span class="t-sm">2021-09 — 至今</span>
+            </div>
+            <p class="t-sm mt1" style="opacity:.55">POI详情页 & 扫街榜内容生态建设</p>
+            <p class="t-sm mt1" style="opacity:.65">负责 POI（地点）详情页体验升级与 0-1 内容生产体系建设，驱动千万级增长并沉淀 15+ 专利。横向牵头多行业组件规范拉齐，覆盖全端百余场景。深度实践 AI 设计工程化，将感性审美转化为量化规则，构建高可控自动化生成引擎，实现复杂业务场景下的设计降本增效。</p>
+          </div>
+        </div>
+        <div class="row gap2" style="align-items:flex-start">
+          <div style="width:clamp(60px,10vw,110px);flex-shrink:0;font-weight:600;font-size:clamp(.65rem,.95vw,.9rem)">网易北京</div>
+          <div class="flex1">
+            <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:4px">
+              <span class="bold" style="font-size:clamp(.7rem,1vw,.95rem)">交互设计师</span>
+              <span class="t-sm">2019-10 — 2021-09</span>
+            </div>
+            <p class="t-sm mt1" style="opacity:.65">负责网易公开课和网易红彩的交互设计工作，参与过C端产品、0-1项目、工具类产品的交互设计工作。参与版本的规划构思和创意设计，规划并负责产品的用户研究、可用性测试，提出优化需求并推动落地；制定规范和组件库，执行用研等相关工作。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 学习经历 -->
+    <div class="row mt3 gap2" style="align-items:flex-start">
+      <div style="width:clamp(60px,8vw,100px);font-weight:700;font-size:clamp(.7rem,1vw,.95rem);flex-shrink:0">学习经历</div>
+      <div class="flex1 col gap2">
+        <div class="row gap2">
+          <div style="width:clamp(60px,10vw,110px);flex-shrink:0;font-weight:600;font-size:clamp(.65rem,.95vw,.9rem)">南安普敦大学</div>
+          <div class="flex1 row" style="justify-content:space-between;flex-wrap:wrap;gap:4px">
+            <span style="font-size:clamp(.7rem,1vw,.95rem)">研究生 用户体验设计</span>
+            <span class="t-sm">2018 — 2019</span>
+          </div>
+        </div>
+        <div class="row gap2">
+          <div style="width:clamp(60px,10vw,110px);flex-shrink:0;font-weight:600;font-size:clamp(.65rem,.95vw,.9rem)">华侨大学</div>
+          <div class="flex1 row" style="justify-content:space-between;flex-wrap:wrap;gap:4px">
+            <span style="font-size:clamp(.7rem,1vw,.95rem)">本科 工业设计</span>
+            <span class="t-sm">2014 — 2018</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="page-info" id="pageInfo"></div>
-</div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 3: My Works                           -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-light slide-pad col center" id="s3">
+  <h2 class="t-big" style="font-style:italic">My Works</h2>
+  <div class="row mt3 gap2" style="justify-content:center;width:100%;max-width:1100px">
+    <!-- Card 1 -->
+    <div style="flex:1;min-width:clamp(180px,25vw,320px);max-width:380px;cursor:pointer" onclick="goTo(3)">
+      <div style="aspect-ratio:16/10;border-radius:clamp(10px,1.2vw,18px);background:linear-gradient(135deg,#dceeff,#f0f6ff,#e8f0ff);display:flex;align-items:flex-end;padding:clamp(12px,1.5vw,24px);box-shadow:0 2px 20px rgba(0,0,0,.06)">
+        <span class="t-num" style="opacity:.12;color:#999">01</span>
+      </div>
+      <div style="padding:clamp(8px,1vw,16px) clamp(4px,.5vw,8px)">
+        <p class="t-mid">高德地图POI（地点）<br>详情页体验升级</p>
+        <div class="row mt1 t-sm op4" style="justify-content:space-between">
+          <span>重点项目</span><span>2025-2026</span>
+        </div>
+      </div>
+    </div>
+    <!-- Card 2 -->
+    <div style="flex:1;min-width:clamp(180px,25vw,320px);max-width:380px;cursor:pointer" onclick="goTo(16)">
+      <div style="aspect-ratio:16/10;border-radius:clamp(10px,1.2vw,18px);background:linear-gradient(135deg,#0a1a3a,#0d3060,#051030);display:flex;align-items:flex-end;padding:clamp(12px,1.5vw,24px);box-shadow:0 2px 20px rgba(0,0,0,.1)">
+        <span class="t-num" style="opacity:.15;color:#fff">02</span>
+      </div>
+      <div style="padding:clamp(8px,1vw,16px) clamp(4px,.5vw,8px)">
+        <p class="t-mid">高德内容化建设</p>
+        <div class="row mt1 t-sm op4" style="justify-content:space-between">
+          <span>0-1项目</span><span>2024-2025</span>
+        </div>
+      </div>
+    </div>
+    <!-- Card 3 -->
+    <div style="flex:1;min-width:clamp(180px,25vw,320px);max-width:380px;cursor:pointer" onclick="goTo(24)">
+      <div style="aspect-ratio:16/10;border-radius:clamp(10px,1.2vw,18px);background:linear-gradient(135deg,#00c8d0,#2050a0,#a030c0,#e04060);display:flex;align-items:flex-end;padding:clamp(12px,1.5vw,24px);box-shadow:0 2px 20px rgba(0,0,0,.1)">
+        <span class="t-num" style="opacity:.2;color:#fff">03</span>
+      </div>
+      <div style="padding:clamp(8px,1vw,16px) clamp(4px,.5vw,8px)">
+        <p class="t-mid">AI项目探索</p>
+        <div class="row mt1 t-sm op4" style="justify-content:space-between">
+          <span>Vibecoding实践</span><span>NOW</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 4: Project 01 Title                   -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-light slide-pad col" id="s4" style="justify-content:center">
+  <div class="blob" style="width:35vw;height:35vw;background:radial-gradient(circle,#a8dfff,#dff0ff);top:5%;right:-10%"></div>
+  <div class="t-num" style="font-size:clamp(4rem,9vw,10rem);opacity:.1">01</div>
+  <p class="t-body op6 mt1">从工具化到内容化</p>
+  <h2 class="t-huge mt1" style="font-size:clamp(1.8rem,4.5vw,4.5rem)">高德地图POI（地点）<br>详情页体验升级 <span class="op4" style="font-weight:400;font-size:.5em">2025-2026</span></h2>
+  <p class="t-body mt3" style="max-width:800px">角色：作为POI详情页的体验设计师，主导设计策略与落地，同时参与高德扫街榜相关的设计承接</p>
+  <p class="t-body mt1" style="max-width:800px">成果：F26 POI详情页内容消费获得<span class="cyan bold">显著增长</span>，体验分超越竞品，获得<span class="cyan bold">专利10+</span></p>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 5: 项目背景                            -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-light slide-pad col" id="s5">
+  <h2 class="t-big">项目背景：痛点与战略定位</h2>
+  <p class="t-body mt1 op6" style="max-width:1000px">伴随高德地图"导航工具→生活服务平台"的战略跃迁，POI详情页的角色发生根本性，从过去导航前作为导航终点的"信息补给站"到现在作为连接线上内容与线下体验的核心枢纽，需承载"激发兴趣-建立信任-促进行动"的全链路，支撑内容生态建设、停留时长提升、商业闭环的三大战略目标。</p>
+  <div class="row mt2 gap2 flex1 row-m-col" style="align-items:stretch">
+    <!-- Left: 定位改变 -->
+    <div style="flex:2;min-width:200px" class="col gap1">
+      <p class="t-body bold">Poi详情定位改变</p>
+      <div class="card mt1">
+        <p class="pink bold" style="font-style:italic;font-size:clamp(.7rem,1vw,.95rem)">Before</p>
+        <p class="t-body bold mt1">导航终点的"信息补给站"</p>
+        <p class="t-sm mt1">用户诉求是高效解决"POI是什么"，用完即走。强调工具属性。</p>
+      </div>
+      <div class="card">
+        <p class="cyan bold" style="font-style:italic;font-size:clamp(.7rem,1vw,.95rem)">Now</p>
+        <p class="t-body bold mt1">连接线上与线下的"核心枢纽"</p>
+        <p class="t-sm mt1">解决"这里的体验是什么样"　强调内容属性。</p>
+      </div>
+    </div>
+    <!-- Right: 核心设计困境 -->
+    <div style="flex:3;min-width:280px" class="col gap1">
+      <p class="t-body bold">核心设计困境</p>
+      <div class="card mt1 row gap2" style="align-items:flex-start;flex:1;padding:clamp(16px,2vw,32px)">
+        <div class="flex1">
+          <p class="t-big op4" style="font-weight:900">01</p>
+          <p class="t-body bold mt1">行业繁杂，难以统一</p>
+          <p class="t-sm mt1">360行行业各异如何用一套通用框架解决所有行业的展示问题？</p>
+        </div>
+        <div class="flex1">
+          <p class="t-big op4" style="font-weight:900">02</p>
+          <p class="t-body bold mt1">信息过载，感知困难</p>
+          <p class="t-sm mt1">如何让用户快速找到想要的内容，而非被海量数据淹没？</p>
+        </div>
+        <div class="flex1">
+          <p class="t-big op4" style="font-weight:900">03</p>
+          <p class="t-body bold mt1">缺乏沉浸，转化断层</p>
+          <p class="t-sm mt1">工具化的静态展示难以建立信任，如何促成最终的到店消费行动？</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 6: 项目背景（含截图） -->
+<section class="slide theme-light" id="s6">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.006.jpeg" alt="项目背景-现状与困境" loading="lazy"></div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 7: 用户决策路径 x 内容消费体验框架     -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-light slide-pad col" id="s7">
+  <h2 class="t-big">用户决策路径 x 内容消费体验框架</h2>
+  <p class="t-body mt1 op6" style="max-width:1000px">基于消费者在线下的决策路径：天然遵循 "确认当下 → 对比同类 → 探索延伸" 的认知路径，为平衡业务扩展与体验效率，我们需一套映射物理世界且统一的信息架构"相等→相似→相关"框架由此诞生，建立一套设计策略应对"用户如何决策地点"的精准映射，解决"用户怎么消费更高效"</p>
+  <div class="row mt2 gap2" style="justify-content:center;flex:1;align-items:stretch">
+    <div style="width:clamp(80px,10vw,130px);display:flex;align-items:center;flex-shrink:0">
+      <p class="t-body op6" style="text-align:right">为什么来消费？</p>
+    </div>
+    <div class="card flex1" style="min-width:160px;text-align:center;display:flex;flex-direction:column;justify-content:center">
+      <p class="t-mid"><span class="op4 bold">01</span> <span class="cyan bold">感知</span></p>
+      <p class="t-sm mt1">建立第一印象，激发兴趣</p>
+    </div>
+    <div class="card flex1" style="min-width:160px;text-align:center;display:flex;flex-direction:column;justify-content:center">
+      <p class="t-mid"><span class="op4 bold">02</span> <span class="cyan bold">信任</span></p>
+      <p class="t-sm mt1">可信、真实、笔记感</p>
+    </div>
+    <div class="card flex1" style="min-width:160px;text-align:center;display:flex;flex-direction:column;justify-content:center">
+      <p class="t-mid"><span class="op4 bold">03</span> <span class="cyan bold">行动</span></p>
+      <p class="t-sm mt1">激发行动，助力转化</p>
+    </div>
+  </div>
+  <div class="row mt1 gap2" style="justify-content:center">
+    <div style="width:clamp(80px,10vw,130px);display:flex;align-items:center;flex-shrink:0">
+      <p class="t-body op6" style="text-align:right">怎么消费更高效？</p>
+    </div>
+    <div class="card flex1" style="text-align:center;padding:clamp(16px,2vw,28px)">
+      <p class="t-mid cyan bold">相等-相似-相关</p>
+      <p class="t-sm mt1">Poi内容消费基础体验框架</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 8-15: 项目详情页面（含截图） -->
+<section class="slide theme-light" id="s8">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.008.jpeg" alt="重构POI详情页信息架构" loading="lazy"></div>
+</section>
+<section class="slide theme-light" id="s9">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.009.jpeg" alt="内容模块整合" loading="lazy"></div>
+</section>
+<section class="slide theme-light" id="s10">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.010.jpeg" alt="通用框架和原子化规范" loading="lazy"></div>
+</section>
+<section class="slide theme-light" id="s11">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.011.jpeg" alt="用户决策路径优化" loading="lazy"></div>
+</section>
+<section class="slide theme-light" id="s12">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.012.jpeg" alt="容器感知强化" loading="lazy"></div>
+</section>
+<section class="slide theme-light" id="s13">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.013.jpeg" alt="UPGC供给感知强化" loading="lazy"></div>
+</section>
+<section class="slide theme-light" id="s14">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.014.jpeg" alt="AI赋能-图片动态化" loading="lazy"></div>
+</section>
+<section class="slide theme-light" id="s15">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.015.jpeg" alt="扫街榜评分详情" loading="lazy"></div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 16: 数据成果                           -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-light slide-pad col" id="s16">
+  <div class="blob" style="width:50vw;height:50vw;background:radial-gradient(circle,#d0eaff,#f0f6ff);top:-10%;left:-15%"></div>
+  <h2 class="t-big">数据成果</h2>
+  <p class="t-body mt1">F26 POI详情页<span class="cyan bold">内容消费获得显著增长</span>，体验分超越竞品，同时获得专利<span class="cyan bold">10+</span></p>
+  <div class="row mt3 gap2" style="justify-content:center;flex-wrap:wrap">
+    <div class="card" style="text-align:center;min-width:clamp(100px,14vw,160px)">
+      <p class="cyan bold" style="font-size:clamp(1.2rem,2.5vw,2.4rem)">+23.5%</p>
+      <p class="t-sm mt1">内容消费<br>UV</p>
+    </div>
+    <div class="card" style="text-align:center;min-width:clamp(100px,14vw,160px)">
+      <p class="cyan bold" style="font-size:clamp(1.2rem,2.5vw,2.4rem)">+30.6%</p>
+      <p class="t-sm mt1">内容消费<br>PV</p>
+    </div>
+    <div class="card" style="text-align:center;min-width:clamp(100px,14vw,160px)">
+      <p class="cyan bold" style="font-size:clamp(1.2rem,2.5vw,2.4rem)">+22.1%</p>
+      <p class="t-sm mt1">推荐菜1.0CTR</p>
+    </div>
+    <div class="card" style="text-align:center;min-width:clamp(100px,14vw,160px)">
+      <p class="cyan bold" style="font-size:clamp(1.2rem,2.5vw,2.4rem)">+284%</p>
+      <p class="t-sm mt1">推荐菜1.0<br>功能渗透率</p>
+    </div>
+    <div class="card" style="text-align:center;min-width:clamp(100px,14vw,160px)">
+      <p class="cyan bold" style="font-size:clamp(1.2rem,2.5vw,2.4rem)">+31%</p>
+      <p class="t-sm mt1">笔记模块CTR</p>
+    </div>
+  </div>
+  <p class="t-body op6 mt3">组件化成果</p>
+  <div class="row mt1 gap2" style="justify-content:flex-start">
+    <div class="card" style="text-align:center;min-width:clamp(80px,10vw,130px)">
+      <p class="cyan bold" style="font-size:clamp(1rem,2vw,2rem)">100<span class="t-sm">+种</span></p>
+      <p class="t-sm mt1">收敛变体</p>
+    </div>
+    <div class="card" style="text-align:center;min-width:clamp(80px,10vw,130px)">
+      <p class="cyan bold" style="font-size:clamp(1rem,2vw,2rem)">15<span class="t-sm">个</span></p>
+      <p class="t-sm mt1">组件沉淀</p>
+    </div>
+    <div class="card" style="text-align:center;min-width:clamp(80px,10vw,130px)">
+      <p class="cyan bold" style="font-size:clamp(1rem,2vw,2rem)">70<span class="t-sm">%+</span></p>
+      <p class="t-sm mt1">复用率</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 17: Project 02 Title                  -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-dark slide-pad col" id="s17" style="justify-content:center">
+  <div class="blob" style="width:40vw;height:60vh;background:radial-gradient(circle,#1a50aa,transparent);top:0;right:0"></div>
+  <div class="t-num" style="font-size:clamp(4rem,9vw,10rem);opacity:.12;color:#fff">02</div>
+  <h2 class="t-huge mt1" style="font-size:clamp(1.8rem,4.5vw,4.5rem)">高德内容化建设 <span class="op4" style="font-weight:400;font-size:.5em">2024-2025</span></h2>
+  <p class="t-body mt2 op6" style="max-width:600px">角色：负责高德内容生产0-1搭建，主导设计策略与落地</p>
+  <p class="t-body mt1 op6" style="max-width:600px">成果：由设计主导的创新工具探索，推进项目落地"虚实地图"作为核心方向。共获得<span class="cyan bold">4个专利+2个创新提案</span></p>
+</section>
+
+<!-- Slide 18-24: 项目02详情（含截图） -->
+<section class="slide theme-dark" id="s18">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.018.jpeg" alt="背景" loading="lazy"></div>
+</section>
+<section class="slide theme-dark" id="s19">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.019.jpeg" alt="基于设计洞察的体验创新" loading="lazy"></div>
+</section>
+<section class="slide theme-dark" id="s20">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.020.jpeg" alt="设计创新：升级图片/路线类内容生产链路" loading="lazy"></div>
+</section>
+<section class="slide theme-dark" id="s21">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.021.jpeg" alt="创新内容发布工具的0-1能力搭建" loading="lazy"></div>
+</section>
+<section class="slide theme-dark" id="s22">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.022.jpeg" alt="模版生产" loading="lazy"></div>
+</section>
+<section class="slide theme-dark" id="s23">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.023.jpeg" alt="通过特色模版提高高德内容消费价值" loading="lazy"></div>
+</section>
+<section class="slide theme-dark" id="s24">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.024.jpeg" alt="成果展示" loading="lazy"></div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 25: Project 03 Title                  -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide slide-pad col" id="s25" style="justify-content:center;background:linear-gradient(135deg,#00a8b8 0%,#1040a0 25%,#501090 50%,#200a30 70%,#0a0a20 100%)">
+  <div class="t-num" style="font-size:clamp(4rem,9vw,10rem);opacity:.12;color:#fff">03</div>
+  <h2 class="t-huge mt1" style="font-size:clamp(1.8rem,4.5vw,4.5rem);color:#fff">AI项目探索 <span class="op4" style="font-weight:400;font-size:.5em">ING</span></h2>
+  <p class="t-body mt2" style="color:rgba(255,255,255,.6)">角色：产品设计工程师</p>
+</section>
+
+<!-- Slide 26-27: AI项目详情（含截图） -->
+<section class="slide theme-gradient" id="s26">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.026.jpeg" alt="PUGC封面自动化生成平台" loading="lazy"></div>
+</section>
+<section class="slide theme-gradient" id="s27">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.027.jpeg" alt="优化思路" loading="lazy"></div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 28: VibeCoding                        -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide theme-dark slide-pad col" id="s28">
+  <div class="blob" style="width:80vw;height:20vh;background:linear-gradient(90deg,#2050a0,#a030c0,#e04060);top:0;left:10%;opacity:.15"></div>
+  <h2 class="t-big">02 基于 VibeCoding 工作流和方法沉淀</h2>
+  <p class="t-body mt1 op6" style="max-width:1000px">通过理解设计思维带入工程思维的差别，梳理与 AI 协作的sop，从传统的设计模式切换到新的工作模式，探索如何通过结构化对话将模糊需求转化为可执行的技术落地方案。</p>
+  <div class="row mt2 gap2 flex1 row-m-col" style="align-items:stretch">
+    <!-- Left -->
+    <div class="card-dark flex1 col" style="padding:clamp(16px,2vw,28px);border-radius:clamp(10px,1.2vw,18px)">
+      <p class="t-mid" style="text-align:center;color:rgba(255,255,255,.7)">思维方式的重构</p>
+      <div class="card-dark mt2" style="border-radius:clamp(8px,1vw,14px);padding:clamp(12px,1.5vw,20px)">
+        <p class="t-body"><span style="margin-right:6px">🎨</span> <span class="orange bold">设计思维 (Vibe)</span></p>
+        <p class="t-sm mt1">· 状态：我不确定需要什么，但清楚不需要什么。</p>
+        <p class="t-sm">· 路径：发散到收敛。不断试错，寻找更优解。</p>
+        <p class="t-sm">· 过程：从 50 分开始，逐渐涨到 100 分的过程。</p>
+      </div>
+      <div class="card-dark mt1" style="border-radius:clamp(8px,1vw,14px);padding:clamp(12px,1.5vw,20px)">
+        <p class="t-body"><span style="margin-right:6px">⚙️</span> <span class="green bold">工程思维 (Structure)</span></p>
+        <p class="t-sm mt1">· 状态：我清楚需要什么，不清楚就先确定再执行。</p>
+        <p class="t-sm">· 路径：收敛到发散。临时功能越少，维护越低。</p>
+        <p class="t-sm">· 过程：从 100 分框架开始，尽量不要掉到 50 分。</p>
+      </div>
+    </div>
+    <!-- Right -->
+    <div class="card-dark flex1 col gap1" style="padding:clamp(16px,2vw,28px);border-radius:clamp(10px,1.2vw,18px)">
+      <p class="t-mid" style="text-align:center;color:rgba(255,255,255,.7)">构建框架的 3 个关键对话</p>
+      <div class="card-dark mt1" style="border-radius:clamp(8px,1vw,14px);padding:clamp(12px,1.5vw,20px)">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <p class="t-body"><span class="pink bold" style="font-family:monospace;font-style:italic">STEP 01：</span> <span class="bold">讨论计划</span></p>
+          <span class="t-sm" style="background:rgba(255,255,255,.08);padding:2px 8px;border-radius:4px">AGENT 模式</span>
+        </div>
+        <p class="t-sm mt1 op6">"我想要实现 [功能]，请与我讨论实施计划并整理成文档。"</p>
+      </div>
+      <div class="card-dark" style="border-radius:clamp(8px,1vw,14px);padding:clamp(12px,1.5vw,20px)">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <p class="t-body"><span class="cyan bold" style="font-family:monospace;font-style:italic">STEP 02：</span> <span class="bold">选型决策</span></p>
+          <span class="t-sm" style="background:rgba(255,255,255,.08);padding:2px 8px;border-radius:4px">PLAN 模式</span>
+        </div>
+        <p class="t-sm mt1 op6">"基于刚才的计划，我应该使用什么工程框架？请对比方案。"</p>
+      </div>
+      <div class="card-dark" style="border-radius:clamp(8px,1vw,14px);padding:clamp(12px,1.5vw,20px)">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <p class="t-body"><span class="green bold" style="font-family:monospace;font-style:italic">STEP 03：</span> <span class="bold">评审优化</span></p>
+          <span class="t-sm" style="background:rgba(255,255,255,.08);padding:2px 8px;border-radius:4px">PLAN 模式</span>
+        </div>
+        <p class="t-sm mt1 op6">"这个方案还有什么潜在问题？如何优化性能？"</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 29-31: AI项目详情（含截图） -->
+<section class="slide theme-dark" id="s29">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.029.jpeg" alt="构建agent虚拟团队 & 规避OOM" loading="lazy"></div>
+</section>
+<section class="slide theme-dark" id="s30">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.030.jpeg" alt="AI Agent Skill 设计模式" loading="lazy"></div>
+</section>
+<section class="slide theme-dark" id="s31">
+  <div class="slide-img-wrap"><img src="slides/keynote_slides.031.jpeg" alt="APP独立开发中" loading="lazy"></div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Slide 32: Thanks                            -->
+<!-- ════════════════════════════════════════════ -->
+<section class="slide col center" id="s32" style="background:radial-gradient(ellipse at 40% 50%,#1a5aaa,#0a1a3a 60%,#050a14)">
+  <!-- Stars -->
+  <div class="star" style="top:18%;left:28%"><svg viewBox="0 0 24 24"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg></div>
+  <div class="star" style="top:15%;left:32%;width:10px;height:10px;animation-delay:.5s"><svg viewBox="0 0 24 24"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg></div>
+  <div class="star" style="top:22%;right:28%"><svg viewBox="0 0 24 24"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg></div>
+  <div class="star" style="bottom:25%;left:40%;animation-delay:1s"><svg viewBox="0 0 24 24"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg></div>
+  <div class="star" style="bottom:20%;right:25%;animation-delay:1.5s"><svg viewBox="0 0 24 24"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg></div>
+  <div class="star" style="bottom:15%;right:22%;width:12px;height:12px;animation-delay:2s"><svg viewBox="0 0 24 24"><path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z"/></svg></div>
+  <!-- Orbit rings -->
+  <div style="position:absolute;width:clamp(200px,30vw,400px);height:clamp(260px,38vw,520px);border:1px solid rgba(255,255,255,.08);border-radius:50%;transform:rotate(-15deg)"></div>
+  <div style="position:absolute;width:clamp(220px,33vw,440px);height:clamp(280px,42vw,560px);border:1px solid rgba(255,255,255,.05);border-radius:50%;transform:rotate(10deg)"></div>
+  <h2 style="font-size:clamp(2rem,5vw,5rem);color:#fff;font-family:monospace;letter-spacing:.1em;position:relative">Thanks</h2>
+  <p class="mt1" style="color:rgba(255,255,255,.5);font-family:monospace;font-size:clamp(.7rem,1.2vw,1.1rem);position:relative">WeiWang's works</p>
+</section>
+
+</div><!-- /container -->
+
+<!-- Navigation dots -->
+<nav class="nav show" id="nav"></nav>
+<div class="page-num" id="pageNum"></div>
 
 <script>
-const TOTAL = 32;
-const container = document.getElementById('slides');
-const dotsEl = document.getElementById('dots');
-const pageInfoEl = document.getElementById('pageInfo');
-const loader = document.getElementById('loader');
+const C = document.getElementById('container');
+const slides = document.querySelectorAll('.slide');
+const N = slides.length;
+let cur = 0;
 
-let current = 0;
-let slides = [];
-let loaded = new Set();
+// Build nav dots
+const nav = document.getElementById('nav');
+const pageNum = document.getElementById('pageNum');
+slides.forEach((s, i) => {
+  const d = document.createElement('button');
+  d.className = 'nav-dot';
+  d.onclick = () => goTo(i);
+  nav.appendChild(d);
+});
 
-// Build slides and dots
-for (let i = 0; i < TOTAL; i++) {
-  const num = String(i + 1).padStart(3, '0');
-
-  // Slide element
-  const div = document.createElement('div');
-  div.className = 'slide' + (i === 0 ? ' active' : '');
-  const img = document.createElement('img');
-  img.alt = 'Slide ' + (i + 1);
-  img.dataset.src = 'slides/keynote_slides.' + num + '.jpeg';
-  div.appendChild(img);
-  container.insertBefore(div, container.querySelector('.nav-zone'));
-  slides.push({ el: div, img: img });
-
-  // Dot
-  const dot = document.createElement('div');
-  dot.className = 'dot' + (i === 0 ? ' active' : '');
-  dot.onclick = () => goTo(i);
-  dotsEl.appendChild(dot);
-}
-
-// Load image
-function loadSlide(idx) {
-  if (idx < 0 || idx >= TOTAL || loaded.has(idx)) return;
-  const s = slides[idx];
-  s.img.src = s.img.dataset.src;
-  loaded.add(idx);
-}
-
-// Preload neighbors
-function preload(idx) {
-  loadSlide(idx);
-  loadSlide(idx - 1);
-  loadSlide(idx + 1);
-  loadSlide(idx + 2);
-}
-
-function updateUI() {
-  const dots = dotsEl.children;
-  for (let i = 0; i < TOTAL; i++) {
-    slides[i].el.classList.toggle('active', i === current);
-    dots[i].classList.toggle('active', i === current);
+function updateNav() {
+  const dots = nav.children;
+  const isLight = slides[cur].classList.contains('theme-light');
+  for (let i = 0; i < N; i++) {
+    dots[i].classList.toggle('active', i === cur);
+    dots[i].classList.toggle('light-ctx', isLight);
   }
-  pageInfoEl.textContent = (current + 1) + ' / ' + TOTAL;
+  pageNum.textContent = (cur + 1) + ' / ' + N;
+  pageNum.classList.toggle('light-ctx', isLight);
 }
 
-function goTo(idx) {
-  if (idx < 0 || idx >= TOTAL) return;
-  current = idx;
-  preload(current);
-  updateUI();
+function goTo(i) {
+  if (i < 0 || i >= N) return;
+  cur = i;
+  slides[i].scrollIntoView({ behavior: 'smooth' });
+  updateNav();
 }
 
-function next() { goTo(current + 1); }
-function prev() { goTo(current - 1); }
+// Detect current slide from scroll position
+let scrollTimer;
+C.addEventListener('scroll', () => {
+  clearTimeout(scrollTimer);
+  scrollTimer = setTimeout(() => {
+    const scrollTop = C.scrollTop;
+    const h = window.innerHeight;
+    cur = Math.round(scrollTop / h);
+    if (cur >= N) cur = N - 1;
+    updateNav();
+  }, 80);
+});
 
-// Keyboard navigation
+// Keyboard
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
-  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(cur + 1); }
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
   else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
-  else if (e.key === 'End') { e.preventDefault(); goTo(TOTAL - 1); }
-  else if (e.key === 'f' || e.key === 'F') { toggleFs(); }
+  else if (e.key === 'End') { e.preventDefault(); goTo(N - 1); }
 });
 
-// Touch/swipe support
-let touchStartX = 0, touchStartY = 0, touchStartTime = 0, swiping = false;
-container.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-  touchStartTime = Date.now();
-  swiping = true;
-  container.classList.add('touch-active');
-  clearTimeout(container._hideTimer);
+// Touch swipe (vertical)
+let ty = 0;
+C.addEventListener('touchstart', e => { ty = e.touches[0].clientY; }, { passive: true });
+C.addEventListener('touchend', e => {
+  const dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dy) > 50) { dy < 0 ? goTo(cur + 1) : goTo(cur - 1); }
 }, { passive: true });
-
-container.addEventListener('touchmove', e => {
-  // Prevent scroll
-}, { passive: true });
-
-container.addEventListener('touchend', e => {
-  if (!swiping) return;
-  swiping = false;
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  const dt = Date.now() - touchStartTime;
-  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) && dt < 500) {
-    dx < 0 ? next() : prev();
-  }
-  container._hideTimer = setTimeout(() => container.classList.remove('touch-active'), 3000);
-});
-
-// Mouse click on slide to toggle bottom bar on mobile
-container.addEventListener('click', e => {
-  if (e.target.closest('.nav-zone,.fs-btn,.dots,.dot')) return;
-  if (window.innerWidth <= 768) {
-    container.classList.toggle('touch-active');
-    clearTimeout(container._hideTimer);
-    if (container.classList.contains('touch-active')) {
-      container._hideTimer = setTimeout(() => container.classList.remove('touch-active'), 3000);
-    }
-  }
-});
-
-// Fullscreen
-function toggleFs() {
-  if (!document.fullscreenElement) {
-    (container.requestFullscreen || container.webkitRequestFullscreen || container.msRequestFullscreen).call(container);
-  } else {
-    (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen).call(document);
-  }
-}
-
-// Mouse wheel
-container.addEventListener('wheel', e => {
-  e.preventDefault();
-  if (e.deltaY > 0 || e.deltaX > 0) next();
-  else prev();
-}, { passive: false });
-
-// Debounce wheel
-let wheelTimer = null;
-container.removeEventListener('wheel', arguments);
-container.addEventListener('wheel', e => {
-  e.preventDefault();
-  if (wheelTimer) return;
-  wheelTimer = setTimeout(() => wheelTimer = null, 300);
-  if (e.deltaY > 0 || e.deltaX > 0) next();
-  else prev();
-}, { passive: false });
 
 // Init
-preload(0);
-slides[0].img.onload = () => { loader.style.display = 'none'; };
-setTimeout(() => loader.style.display = 'none', 3000); // fallback hide
-updateUI();
+updateNav();
 </script>
 </body>
 </html>
